@@ -1,0 +1,8 @@
+# This tells Git to ignore all build folders
+[Bb]in/
+[Oo]bj/
+
+# This ignores user-specific files from Visual Studio
+.vs/
+*.suo
+*.user
