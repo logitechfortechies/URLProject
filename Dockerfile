@@ -5,15 +5,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the project file and restore dependencies
-# It now correctly looks for your UrlShortenerApi.csproj file
-COPY UrlShortenerApi/UrlShortenerApi.csproj UrlShortenerApi/
-RUN dotnet restore UrlShortenerApi/UrlShortenerApi.csproj
+# Copy the ENTIRE project folder into the build container
+# This is simpler and more robust
+COPY UrlShortenerApi/ .
 
-# Copy the rest of the source code and build
-COPY UrlShortenerApi/ UrlShortenerApi/
-WORKDIR /src/UrlShortenerApi
-RUN dotnet publish -c Release -o /app/publish
+# Run restore on the project file (now in the root of /src)
+RUN dotnet restore "UrlShortenerApi.csproj"
+
+# Run publish
+RUN dotnet publish "UrlShortenerApi.csproj" -c Release -o /app/publish
 
 # ----
 # Stage 2: Create the final runtime image
@@ -27,5 +27,4 @@ COPY --from=build /app/publish .
 EXPOSE 8080
 
 # Entry point to run the application
-# This now correctly uses your project's DLL file
 ENTRYPOINT ["dotnet", "UrlShortenerApi.dll"]
