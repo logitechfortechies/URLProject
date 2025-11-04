@@ -4,9 +4,20 @@ using UrlShortener.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- 1. DEFINE YOUR CORS POLICY ---
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Allow your local Vue app
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // --- Database Code ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services..AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // --- Register Your Service ---
@@ -33,6 +44,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// --- 2. TELL YOUR APP TO USE THE CORS POLICY ---
+app.UseCors();
+
 // --- "CREATE LINK" API ENDPOINT ---
 app.MapPost("/api/shorten",
     async (CreateShortUrlRequest request, IUrlShortenerService service, HttpContext httpContext) =>
@@ -48,20 +62,16 @@ app.MapPost("/api/shorten",
         return Results.Ok(new CreateShortUrlResponse(shortUrl));
     });
 
-// ---
-// --- 1. THIS IS YOUR NEW "REDIRECT" ENDPOINT ---
-// ---
+// --- "REDIRECT" ENDPOINT ---
 app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
 {
     var longUrl = await service.GetLongUrlAsync(shortCode);
 
     if (longUrl is null)
     {
-        // If the code doesn't exist, return a 404 Not Found
         return Results.NotFound();
     }
 
-    // If it exists, redirect the user to the original long URL
     return Results.Redirect(longUrl, permanent: true);
 });
 
