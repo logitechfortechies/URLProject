@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
-using static System.Net.WebRequestMethods;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. THIS IS THE CORS CODE YOU ARE MISSING ---
+// --- 1. DEFINE YOUR CORS POLICY ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -15,8 +14,6 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
-// --- END OF CORS CODE ---
-
 
 // --- Database Code ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -47,9 +44,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// --- 2. THIS TELLS YOUR APP TO USE THE CORS POLICY ---
+// --- 2. TELL YOUR APP TO USE THE CORS POLICY ---
 app.UseCors();
-
 
 // --- "CREATE LINK" API ENDPOINT ---
 app.MapPost("/api/shorten",
@@ -61,7 +57,9 @@ app.MapPost("/api/shorten",
         }
 
         var shortCode = await service.CreateShortUrlAsync(request.LongUrl);
-        var shortUrl = $"{httpContext.Request.Scheme}://{http://context.Request.Host}/{shortCode}";
+
+        // --- THIS IS THE FIX (no "http://" inside the braces) ---
+        var shortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{shortCode}";
 
         return Results.Ok(new CreateShortUrlResponse(shortUrl));
     });
