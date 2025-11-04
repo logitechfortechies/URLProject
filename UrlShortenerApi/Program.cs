@@ -17,7 +17,7 @@ builder.Services.AddCors(options =>
 
 // --- Database Code ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services..AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // --- Register Your Service ---
