@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- THIS IS THE FIX: Adds the missing package -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
+
+    <!-- These links are needed for your advanced architecture -->
+    <ProjectReference Include="..\UrlShortener.Application\UrlShortener.Application.csproj" />
+    <ProjectReference Include="..\UrlShortener.Infrastructure\UrlShortener.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

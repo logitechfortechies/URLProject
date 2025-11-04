@@ -5,13 +5,21 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the ENTIRE project folder into the build container
-COPY UrlShortenerApi/ .
+# Copy the solution file and all project files
+COPY *.sln .
+COPY UrlShortenerApi/*.csproj ./UrlShortenerApi/
+COPY UrlShortener.Application/*.csproj ./UrlShortener.Application/
+COPY UrlShortener.Domain/*.csproj ./UrlShortener.Domain/
+COPY UrlShortener.Infrastructure/*.csproj ./UrlShortener.Infrastructure/
 
-# Run restore on the project file
-RUN dotnet restore "UrlShortenerApi.csproj"
+# Restore all dependencies for the entire solution
+RUN dotnet restore "URLProject.sln"
 
-# Run publish
+# Copy the rest of the source code
+COPY . .
+
+# Publish the main API project (and its dependencies)
+WORKDIR "/src/UrlShortenerApi"
 RUN dotnet publish "UrlShortenerApi.csproj" -c Release -o /app/publish
 
 # ----
