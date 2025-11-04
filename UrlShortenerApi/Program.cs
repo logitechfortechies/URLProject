@@ -1,23 +1,29 @@
 using Microsoft.EntityFrameworkCore;
-using UrlShortener.Infrastructure; // <-- Add this to use your new file
+using UrlShortener.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- THIS IS THE NEW DATABASE CODE ---
-// 1. Get the connection string from the Environment Variable you set on Render.
+// --- Database Code ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// 2. Add the Database Context to your app's services.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
-// --- END OF NEW DATABASE CODE ---
 
-
-// This is your .NET 8.0 Swagger/OpenAPI code
+// --- Swagger Code ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// --- THIS IS THE NEW MIGRATION CODE ---
+// Automatically run database migrations when the app starts
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // This command creates/updates the database tables
+    await dbContext.Database.MigrateAsync();
+}
+// --- END OF NEW MIGRATION CODE ---
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -27,7 +33,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// This is your "Hello World" endpoint. 
-app.MapGet("/", () => "Hello World! The database is now connected.");
+app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
 
 app.Run();
