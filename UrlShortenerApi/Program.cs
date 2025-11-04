@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Get the connection string from the Environment Variable you set on Render.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// 2. Add the Database Context to your app.
+// 2. Add the Database Context to your app's services.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 // --- END OF NEW DATABASE CODE ---
