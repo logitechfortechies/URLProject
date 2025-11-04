@@ -1,14 +1,24 @@
-// This is the correct .NET 8.0-compatible code for Program.cs
+using Microsoft.EntityFrameworkCore;
+using UrlShortener.Infrastructure; // <-- Add this to use your new file
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. This is the .NET 8 way to add Swagger/OpenAPI
+// --- THIS IS THE NEW DATABASE CODE ---
+// 1. Get the connection string from the Environment Variable you set on Render.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// 2. Add the Database Context to your app.
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+// --- END OF NEW DATABASE CODE ---
+
+
+// This is your .NET 8.0 Swagger/OpenAPI code
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 2. This is the .NET 8 way to use Swagger/OpenAPI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -17,7 +27,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// This is your "Hello World" endpoint. We'll replace this later.
-app.MapGet("/", () => "Hello World! My pipeline works!");
+// This is your "Hello World" endpoint. 
+app.MapGet("/", () => "Hello World! The database is now connected.");
 
 app.Run();
