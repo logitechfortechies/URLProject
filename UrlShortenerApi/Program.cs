@@ -1,6 +1,6 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Identity; // For Identity
+using Microsoft.AspNetCore.RateLimiting; // For Rate Limiting
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Allow your local Vue app
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -39,13 +39,12 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
     options.AddFixedWindowLimiter(policyName: "FixedWindowPolicy", opt =>
     {
-        opt.PermitLimit = 5;       // Allow 5 requests
-        opt.Window = TimeSpan.FromSeconds(10); // in a 10-second window
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromSeconds(10);
         opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 2; // Allow 2 extra requests to wait in a queue
+        opt.QueueLimit = 2;
     });
 });
 
@@ -66,14 +65,20 @@ using (var scope = app.Services.CreateScope())
     await dbContext.Database.MigrateAsync();
 }
 
-// --- 9. CONFIGURE MIDDLEWARE ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.Swa8ggerUI();
 }
 
 app.UseHttpsRedirection();
+
+// --- 9. CONFIGURE MIDDLEWARE ---
+
+// This serves your Vue.js app's static files (e.g., index.html)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseCors();
 
 // These MUST be in the correct order
@@ -92,18 +97,20 @@ app.MapPost("/api/shorten",
         HttpContext httpContext
     ) =>
     {
-        // Run the validator
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
+        // --- THIS IS THE FIX ---
+        // We now pass all 3 arguments to the service
         var response = await service.CreateShortUrlAsync(
             request.LongUrl,
             httpContext.Request.Scheme,
             httpContext.Request.Host.ToString()
         );
+        // --- END OF FIX ---
 
         return Results.Ok(response);
     })
@@ -123,10 +130,11 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
     return Results.Redirect(longUrl, permanent: true);
 });
 
-// TEST ENDPOINT
-app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
-
 // "IDENTITY" ENDPOINTS (e.g., /register, /login)
 app.MapIdentityApi<IdentityUser>();
+
+// --- THIS IS THE FIX for serving the VUE APP ---
+// This must be LAST. It sends all other requests to your Vue app.
+app.MapFallbackToFile("index.html");
 
 app.Run();
