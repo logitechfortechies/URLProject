@@ -97,6 +97,3 @@ app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
 
 app.Run();
 
-// --- Request/Response Objects ---
-public record CreateShortUrlRequest(string LongUrl);
-public record CreateShortUrlResponse(string ShortUrl);
