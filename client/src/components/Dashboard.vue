@@ -4,6 +4,7 @@ import { ref } from 'vue'
 // All your logic now lives in this component
 const longUrl = ref('')
 const shortUrl = ref('')
+const qrCodeBase64 = ref('') // This stores the QR code
 const isLoading = ref(false)
 const errorMessage = ref('')
 
@@ -14,6 +15,7 @@ async function createShortUrl() {
   isLoading.value = true
   errorMessage.value = ''
   shortUrl.value = ''
+  qrCodeBase64.value = '' // Reset the QR code
 
   try {
     const response = await fetch(`${API_URL}/api/shorten`, {
@@ -28,6 +30,7 @@ async function createShortUrl() {
 
     const data = await response.json()
     shortUrl.value = data.shortUrl
+    qrCodeBase64.value = data.qrCodeBase64 // Save the QR code
   } catch (error) {
     errorMessage.value = error.message
   } finally {
@@ -38,7 +41,7 @@ async function createShortUrl() {
 async function copyToClipboard() {
   try {
     await navigator.clipboard.writeText(shortUrl.value)
-    alert('Copied to clipboard!') // We can make this a Vuetify snackbar later
+    alert('Copied to clipboard!')
   } catch (err) {
     errorMessage.value = 'Failed to copy text.'
   }
@@ -77,6 +80,18 @@ async function copyToClipboard() {
               ></v-btn>
             </template>
           </v-text-field>
+
+          <v-row justify="center" class="mt-4">
+            <v-col cols="auto">
+              <v-img
+                :src="qrCodeBase64"
+                alt="QR Code"
+                width="200"
+                height="200"
+                class="bg-white"
+              ></v-img>
+            </v-col>
+          </v-row>
         </v-card>
 
         <v-alert
