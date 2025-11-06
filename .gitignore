@@ -6,3 +6,5 @@
 .vs/
 *.suo
 *.user
+# Ignore Vue.js node_modules
+/client/node_modules/
