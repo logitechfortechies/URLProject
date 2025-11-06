@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
@@ -30,6 +31,9 @@ builder.Services.AddStackExchangeRedisCache(options =>
 // --- Register Your Service ---
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 
+// --- Add Fluent Validation Services ---
+builder.Services.AddValidatorsFromAssemblyContaining<IUrlShortenerService>();
+
 // --- Swagger Code ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -56,18 +60,30 @@ app.UseCors();
 
 // --- "CREATE LINK" API ENDPOINT ---
 app.MapPost("/api/shorten",
-    async (CreateShortUrlRequest request, IUrlShortenerService service, HttpContext httpContext) =>
+    async (
+        CreateShortUrlRequest request,
+        IUrlShortenerService service,
+        IValidator<CreateShortUrlRequest> validator,
+        HttpContext httpContext
+    ) =>
     {
-        // We will add FluentValidation next
-        if (string.IsNullOrEmpty(request.LongUrl) || !Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
+        // Run the validator
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
         {
-            return Results.BadRequest("Invalid URL.");
+            return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var shortCode = await service.CreateShortUrlAsync(request.LongUrl);
-        var shortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{shortCode}";
+        // --- THIS IS THE FIX ---
+        // We now pass all 3 arguments to the service
+        var response = await service.CreateShortUrlAsync(
+            request.LongUrl,
+            httpContext.Request.Scheme,
+            httpContext.Request.Host.ToString()
+        );
+        // --- END OF FIX ---
 
-        return Results.Ok(new CreateShortUrlResponse(shortUrl));
+        return Results.Ok(response); // This now returns the full object { shortUrl, qrCodeBase64 }
     });
 
 // --- "REDIRECT" ENDPOINT ---
@@ -87,6 +103,3 @@ app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
 
 app.Run();
 
-// --- Request/Response Objects ---
-public record CreateShortUrlRequest(string LongUrl);
-public record CreateShortUrlResponse(string ShortUrl);
