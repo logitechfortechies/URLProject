@@ -5,48 +5,38 @@ using UrlShortener.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DEFINE YOUR CORS POLICY ---
+// --- CORS Policy (Still good for local dev) ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Allow your local Vue app
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// --- Database Code ---
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// ... (Database, Redis, Services, Validation, Swagger... all stay the same) ...
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-// --- Redis Cache Code ---
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
     options.InstanceName = "UrlShortener_";
 });
-
-// --- Register Your Service ---
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
-
-// --- Add Fluent Validation Services ---
 builder.Services.AddValidatorsFromAssemblyContaining<IUrlShortenerService>();
-
-// --- Swagger Code ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// --- Auto-Migration Code ---
+// ... (Auto-Migration, Swagger UI... all stay the same) ...
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await dbContext.Database.MigrateAsync();
 }
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -55,10 +45,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// --- 2. TELL YOUR APP TO USE THE CORS POLICY ---
+// --- THIS IS NEW ---
+// 1. Serve default files like index.html
+app.UseDefaultFiles();
+// 2. Serve all static files from the wwwroot folder (where your Vue app is)
+app.UseStaticFiles();
+// --- END OF NEW ---
+
 app.UseCors();
 
-// --- "CREATE LINK" API ENDPOINT ---
+// --- API ENDPOINTS (MUST come before the fallback) ---
 app.MapPost("/api/shorten",
     async (
         CreateShortUrlRequest request,
@@ -67,26 +63,21 @@ app.MapPost("/api/shorten",
         HttpContext httpContext
     ) =>
     {
-        // Run the validator
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        // --- THIS IS THE FIX ---
-        // We now pass all 3 arguments to the service
         var response = await service.CreateShortUrlAsync(
             request.LongUrl,
             httpContext.Request.Scheme,
             httpContext.Request.Host.ToString()
         );
-        // --- END OF FIX ---
 
-        return Results.Ok(response); // This now returns the full object { shortUrl, qrCodeBase64 }
+        return Results.Ok(response);
     });
 
-// --- "REDIRECT" ENDPOINT ---
 app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
 {
     var longUrl = await service.GetLongUrlAsync(shortCode);
@@ -99,6 +90,9 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
     return Results.Redirect(longUrl, permanent: true);
 });
 
-app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
+// --- THIS IS NEW ---
+// 3. This tells the API to send all other requests (like "/dashboard")
+// to your Vue app's index.html file. This is critical for SPAs.
+app.MapFallbackToFile("index.html");
 
 app.Run();

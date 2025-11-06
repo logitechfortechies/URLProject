@@ -9,7 +9,7 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 // This is your live API URL on Render
-const API_URL = 'https://nginx-latest-1-mem4.onrender.com'
+const API_URL = '' // This will now call /api/shorten
 
 async function createShortUrl() {
   isLoading.value = true
