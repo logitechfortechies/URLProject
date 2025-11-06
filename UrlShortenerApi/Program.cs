@@ -1,15 +1,16 @@
+using FluentValidation; // <-- 1. ADD THIS
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DEFINE YOUR CORS POLICY ---
+// --- CORS Policy ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Allow your local Vue app
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -20,8 +21,18 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+// --- Redis Cache Code ---
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "UrlShortener_";
+});
+
 // --- Register Your Service ---
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
+
+// --- 2. ADD FLUENT VALIDATION SERVICES ---
+builder.Services.AddValidatorsFromAssemblyContaining<IUrlShortenerService>();
 
 // --- Swagger Code ---
 builder.Services.AddEndpointsApiExplorer();
@@ -29,16 +40,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// --- THIS IS THE NEW MIGRATION CODE ---
-// Automatically run database migrations when the app starts
+// --- Auto-Migration Code ---
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    // This command creates/updates the database tables
     await dbContext.Database.MigrateAsync();
 }
-// --- END OF NEW MIGRATION CODE ---
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -47,18 +54,25 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// --- 2. TELL YOUR APP TO USE THE CORS POLICY ---
 app.UseCors();
 
 // --- "CREATE LINK" API ENDPOINT ---
 app.MapPost("/api/shorten",
-    async (CreateShortUrlRequest request, IUrlShortenerService service, HttpContext httpContext) =>
+    async (
+        CreateShortUrlRequest request,
+        IUrlShortenerService service,
+        IValidator<CreateShortUrlRequest> validator, // <-- 3. INJECT THE VALIDATOR
+        HttpContext httpContext
+    ) =>
     {
-        if (string.IsNullOrEmpty(request.LongUrl) || !Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
+        // 4. RUN THE VALIDATOR
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
         {
-            return Results.BadRequest("Invalid URL.");
+            // If validation fails, return a 400 Bad Request with the errors
+            return Results.ValidationProblem(validationResult.ToDictionary());
         }
+        // --- END OF VALIDATION CODE ---
 
         var shortCode = await service.CreateShortUrlAsync(request.LongUrl);
         var shortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{shortCode}";
@@ -79,8 +93,6 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
     return Results.Redirect(longUrl, permanent: true);
 });
 
-// --- NEW ROOT ENDPOINT ---
-// This will be our new success message
 app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
 
 app.Run();
