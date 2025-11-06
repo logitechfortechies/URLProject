@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Caching.Distributed;
 using UrlShortener.Domain;
 using UrlShortener.Infrastructure;
-using QRCoder; 
-using System.Drawing; 
-using System.IO; 
+using QRCoder;
+using System.Drawing;
+using System.IO;
 
 namespace UrlShortener.Application
 {
