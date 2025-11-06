@@ -58,28 +58,23 @@ app.UseCors();
 
 // --- "CREATE LINK" API ENDPOINT ---
 app.MapPost("/api/shorten",
-    async (
-        CreateShortUrlRequest request,
-        IUrlShortenerService service,
-        IValidator<CreateShortUrlRequest> validator, // <-- 3. INJECT THE VALIDATOR
-        HttpContext httpContext
-    ) =>
+    async (CreateShortUrlRequest request, IUrlShortenerService service, HttpContext httpContext) =>
     {
-        // 4. RUN THE VALIDATOR
-        var validationResult = await validator.ValidateAsync(request);
-        if (!validationResult.IsValid)
+        // We'll add FluentValidation later
+        if (string.IsNullOrEmpty(request.LongUrl) || !Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
         {
-            // If validation fails, return a 400 Bad Request with the errors
-            return Results.ValidationProblem(validationResult.ToDictionary());
+            return Results.BadRequest("Invalid URL.");
         }
-        // --- END OF VALIDATION CODE ---
 
-        var shortCode = await service.CreateShortUrlAsync(request.LongUrl);
-        var shortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{shortCode}";
+        // THIS IS THE CHANGE: Pass the request Scheme and Host to the service
+        var response = await service.CreateShortUrlAsync(
+            request.LongUrl,
+            httpContext.Request.Scheme,
+            httpContext.Request.Host.ToString()
+        );
 
-        return Results.Ok(new CreateShortUrlResponse(shortUrl));
+        return Results.Ok(response); // This now returns { shortUrl: "...", qrCodeBase64: "..." }
     });
-
 // --- "REDIRECT" ENDPOINT ---
 app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
 {

@@ -1,17 +1,17 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-// Import Vuetify styles
+// 1. Import Vuetify styles
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 
-// Import Vuetify
+// 2. Import Vuetify
 import { createVuetify } from 'vuetify'
+// THIS IS THE FIX: Removed the extra "import *"
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
 // --- 1. DEFINE YOUR CUSTOM THEME ---
-// We create a new "dark" theme inspired by your screenshot
 const myCustomDarkTheme = {
   dark: true,
   colors: {
