@@ -26,7 +26,12 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x' # Match your project's .NET version
+          dotnet-version: '8.0.x' 
+       
+      
+      - name: Run .NET Linter (Format Check)
+        run: dotnet format --verify-no-changes
+
       
       # 3. Log in to Docker Hub
       #    Uses the secrets you'll create in GitHub settings
