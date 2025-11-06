@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore; 
+using Microsoft.EntityFrameworkCore;
 using UrlShortener.Domain;
 
 namespace UrlShortener.Infrastructure
 {
-    public class ApplicationDbContext : DbContext
+    
+    public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -11,5 +13,8 @@ namespace UrlShortener.Infrastructure
         }
 
         public DbSet<ShortenedUrl> ShortenedUrls { get; set; }
+
+        // All the user tables (AspNetUsers, etc.)
+        // are now included automatically by IdentityDbContext
     }
 }
