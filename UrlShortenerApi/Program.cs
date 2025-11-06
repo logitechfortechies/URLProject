@@ -102,4 +102,3 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
 app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
 
 app.Run();
-
