@@ -1,19 +1,18 @@
 <script setup>
-// This file now only imports your components
-import Sidebar from './components/SidebarSubsection.vue'
-import Container from './components/ContainerSubsection.vue'
+import Sidebar from './components/Sidebar.vue'
+import Dashboard from './components/Dashboard.vue'
 </script>
 
 <template>
   <v-app>
     <Sidebar />
 
-    <v-main class="bg-grey-lighten-4">
-      <Container />
+    <v-main class="bg-grey-lighten-5">
+      <Dashboard />
     </v-main>
   </v-app>
 </template>
 
 <style>
-/* You can put global styles here if you want */
+/* Global styles if needed */
 </style>
