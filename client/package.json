@@ -14,7 +14,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "vue": "^3.5.22"
+    "@mdi/font": "^7.4.47",
+    "vue": "^3.5.22",
+    "vuetify": "^3.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",

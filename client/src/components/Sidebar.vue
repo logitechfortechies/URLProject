@@ -17,8 +17,8 @@ const items = [
 <template>
   <v-navigation-drawer permanent app width="250" class="pa-2">
     <v-list-item
-      title="Shortener"
-      subtitle="Your Project"
+      title="URL Shortener"
+      subtitle="Hi im out of ideas"
       class="text-h5 font-weight-bold mb-4"
     ></v-list-item>
 

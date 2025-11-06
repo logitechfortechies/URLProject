@@ -28,7 +28,6 @@ async function createShortUrl() {
 
     const data = await response.json()
     shortUrl.value = data.shortUrl
-
   } catch (error) {
     errorMessage.value = error.message
   } finally {
@@ -50,7 +49,6 @@ async function copyToClipboard() {
   <v-container>
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
-
         <v-card class="pa-4 pa-md-6" elevation="2">
           <h1 class="text-h4 text-center mb-6">URL Shortener</h1>
           <v-text-field
@@ -62,25 +60,14 @@ async function copyToClipboard() {
             @keyup.enter="createShortUrl"
           ></v-text-field>
 
-          <v-btn
-            :loading="isLoading"
-            @click="createShortUrl"
-            color="primary"
-            size="large"
-            block
-          >
+          <v-btn :loading="isLoading" @click="createShortUrl" color="primary" size="large" block>
             Shorten!
           </v-btn>
         </v-card>
 
         <v-card v-if="shortUrl" class="mt-6 pa-4 pa-md-6" elevation="2">
           <div class="text-h6 mb-4">Your short link is ready!</div>
-          <v-text-field
-            :model-value="shortUrl"
-            label="Short Link"
-            variant="filled"
-            readonly
-          >
+          <v-text-field :model-value="shortUrl" label="Short Link" variant="filled" readonly>
             <template v-slot:append-inner>
               <v-btn
                 icon="mdi-content-copy"
@@ -101,12 +88,7 @@ async function copyToClipboard() {
         >
           {{ errorMessage }}
         </v-alert>
-
       </v-col>
     </v-row>
   </v-container>
 </template>
-
-<style scoped>
-/* You can add custom styles for just this component here */
-</style>
