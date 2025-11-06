@@ -29,12 +29,16 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// --- Auto-Migration Code ---
+// --- THIS IS THE NEW MIGRATION CODE ---
+// Automatically run database migrations when the app starts
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // This command creates/updates the database tables
     await dbContext.Database.MigrateAsync();
 }
+// --- END OF NEW MIGRATION CODE ---
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -57,8 +61,6 @@ app.MapPost("/api/shorten",
         }
 
         var shortCode = await service.CreateShortUrlAsync(request.LongUrl);
-
-        // --- THIS IS THE FIX (no "http://" inside the braces) ---
         var shortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{shortCode}";
 
         return Results.Ok(new CreateShortUrlResponse(shortUrl));
@@ -76,6 +78,10 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
 
     return Results.Redirect(longUrl, permanent: true);
 });
+
+// --- NEW ROOT ENDPOINT ---
+// This will be our new success message
+app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
 
 app.Run();
 
