@@ -1,16 +1,15 @@
-using FluentValidation; // <-- 1. ADD THIS
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- CORS Policy ---
+// --- 1. DEFINE YOUR CORS POLICY ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5173") // Allow your local Vue app
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -30,9 +29,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 // --- Register Your Service ---
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
-
-// --- 2. ADD FLUENT VALIDATION SERVICES ---
-builder.Services.AddValidatorsFromAssemblyContaining<IUrlShortenerService>();
 
 // --- Swagger Code ---
 builder.Services.AddEndpointsApiExplorer();
@@ -54,27 +50,26 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// --- 2. TELL YOUR APP TO USE THE CORS POLICY ---
 app.UseCors();
 
 // --- "CREATE LINK" API ENDPOINT ---
 app.MapPost("/api/shorten",
     async (CreateShortUrlRequest request, IUrlShortenerService service, HttpContext httpContext) =>
     {
-        // We'll add FluentValidation later
+        // We will add FluentValidation next
         if (string.IsNullOrEmpty(request.LongUrl) || !Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
         {
             return Results.BadRequest("Invalid URL.");
         }
 
-        // THIS IS THE CHANGE: Pass the request Scheme and Host to the service
-        var response = await service.CreateShortUrlAsync(
-            request.LongUrl,
-            httpContext.Request.Scheme,
-            httpContext.Request.Host.ToString()
-        );
+        var shortCode = await service.CreateShortUrlAsync(request.LongUrl);
+        var shortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/{shortCode}";
 
-        return Results.Ok(response); // This now returns { shortUrl: "...", qrCodeBase64: "..." }
+        return Results.Ok(new CreateShortUrlResponse(shortUrl));
     });
+
 // --- "REDIRECT" ENDPOINT ---
 app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
 {
@@ -92,3 +87,6 @@ app.MapGet("/", () => "Hello World! The database is connected AND migrated!");
 
 app.Run();
 
+// --- Request/Response Objects ---
+public record CreateShortUrlRequest(string LongUrl);
+public record CreateShortUrlResponse(string ShortUrl);

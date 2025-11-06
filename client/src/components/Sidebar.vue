@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 
 // This will control which item is currently "active"
-const selectedItem = ref('Dashboard')
+const selectedItem = ref(['Dashboard']) // Add brackets
 
 // This is the list of links for your sidebar
 const items = [
