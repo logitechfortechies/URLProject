@@ -1,6 +1,5 @@
 <script setup>
 import Sidebar from './components/Sidebar.vue'
-import Dashboard from './components/Dashboard.vue'
 </script>
 
 <template>
@@ -8,7 +7,7 @@ import Dashboard from './components/Dashboard.vue'
     <Sidebar />
 
     <v-main class="bg-grey-lighten-5">
-      <Dashboard />
+      <router-view />
     </v-main>
   </v-app>
 </template>

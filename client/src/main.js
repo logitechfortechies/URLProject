@@ -1,3 +1,4 @@
+import router from './router'
 import { createApp } from 'vue'
 import App from './App.vue'
 
@@ -45,5 +46,4 @@ const vuetify = createVuetify({
   },
 })
 
-// Mount the app and tell it to use Vuetify
-createApp(App).use(vuetify).mount('#app')
+createApp(App).use(router).use(vuetify).mount('#app')
