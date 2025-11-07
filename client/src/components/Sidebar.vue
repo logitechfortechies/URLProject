@@ -25,8 +25,8 @@ const items = [
     class="pa-2"
   >
     <v-list-item
-      title="Shortener"
-      subtitle="Your Project"
+      title="Shortly-URLShortner"
+      subtitle="I'm out of ideas -seriously"
       class="text-h5 font-weight-bold mb-4"
     ></v-list-item>
 

@@ -8,19 +8,37 @@ const qrCodeBase64 = ref('') // This stores the QR code
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-// This is your live API URL on Render
-const API_URL = '' // This will now call /api/shorten
+
+const API_URL = '' //Live API URL on render
+// https://nginx-latest-1-mem4.onrender.com
 
 async function createShortUrl() {
   isLoading.value = true
   errorMessage.value = ''
   shortUrl.value = ''
-  qrCodeBase64.value = '' // Reset the QR code
+  qrCodeBase64.value = '' // Make sure to reset this too
+
+
+  // 1. Get the token from storage
+  const token = localStorage.getItem('authToken')
+
+  if (!token) {
+    errorMessage.value = 'You are not logged in. Please log in first.'
+    isLoading.value = false
+    return
+  }
+
+  // 2. Add the token to the 'Authorization' header
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}` // This is the "VIP Pass"
+  }
+  // --- END OF FIX ---
 
   try {
     const response = await fetch(`${API_URL}/api/shorten`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers, // <-- Use the new headers object
       body: JSON.stringify({ longUrl: longUrl.value }),
     })
 
