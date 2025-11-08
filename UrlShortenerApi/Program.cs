@@ -106,10 +106,10 @@ app.MapPost("/api/shorten",
         // --- THIS IS THE FIX ---
         // We now pass all 3 arguments to the service
         var response = await service.CreateShortUrlAsync(
-            request.LongUrl,
-            httpContext.Request.Scheme,
-            httpContext.Request.Host.ToString()
-        );
+        request, 
+        httpContext.Request.Scheme,
+        httpContext.Request.Host.ToString()
+    );
         // --- END OF FIX ---
 
         return Results.Ok(response);

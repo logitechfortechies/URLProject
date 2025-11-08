@@ -1,23 +1,40 @@
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
+using UrlShortener.Infrastructure; 
 
 namespace UrlShortener.Application.Validators
 {
-    // This validator is for your 'CreateShortUrlRequest' record
     public class CreateShortUrlRequestValidator : AbstractValidator<CreateShortUrlRequest>
     {
-        public CreateShortUrlRequestValidator()
+        // 2. ADD THIS TO HOLD THE DATABASE CONNECTION
+        private readonly ApplicationDbContext _dbContext;
+
+        // 3. UPDATE THE CONSTRUCTOR TO RECEIVE THE DATABASE
+        public CreateShortUrlRequestValidator(ApplicationDbContext dbContext)
         {
-            // This is the validation rule
+            _dbContext = dbContext; // 4. ASSIGN THE DATABASE
+
+            // --- This is your existing rule for LongUrl ---
             RuleFor(x => x.LongUrl)
                 .NotEmpty().WithMessage("URL must not be empty.")
                 .Must(BeAValidUrl).WithMessage("A valid URL is required.");
+
+            // --- 5. ADD THESE NEW RULES FOR THE CUSTOM ALIAS ---
+            RuleFor(x => x.CustomAlias)
+                .MinimumLength(5).When(x => !string.IsNullOrEmpty(x.CustomAlias))
+                    .WithMessage("Custom alias must be at least 5 characters.")
+                .MaximumLength(30).When(x => !string.IsNullOrEmpty(x.CustomAlias))
+                    .WithMessage("Custom alias must be 30 characters or less.")
+                .Matches("^[a-zA-Z0-9_-]*$").When(x => !string.IsNullOrEmpty(x.CustomAlias)) // Allows letters, numbers, dash, underscore
+                    .WithMessage("Alias can only contain letters, numbers, dashes, and underscores.")
+                .MustAsync(BeUniqueAlias).When(x => !string.IsNullOrEmpty(x.CustomAlias))
+                    .WithMessage("This custom alias is already taken. Please choose another.");
         }
 
-        // This is a custom function to check if the URL is valid
         private bool BeAValidUrl(string longUrl)
         {
             return Uri.IsWellFormedUriString(longUrl, UriKind.Absolute);
         }
-    }
-}
+
+        // --- 6
