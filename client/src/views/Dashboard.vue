@@ -1,53 +1,74 @@
 <script setup>
 import { ref } from 'vue'
 
+// --- 1. STATE ---
+// We add a new ref for the custom alias
 const longUrl = ref('')
+const customAlias = ref('') // <-- NEW
 const shortUrl = ref('')
-const qrCodeBase64 = ref('') // This stores the QR code
+const qrCodeBase64 = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
+// Use a relative path, as your Vue app is now hosted by your API
+const API_URL = ''
 
-const API_URL = '' //Live API URL on render
-// https://nginx-latest-1-mem4.onrender.com
-
+// --- 2. THE createShortUrl FUNCTION (HEAVILY UPDATED) ---
 async function createShortUrl() {
   isLoading.value = true
   errorMessage.value = ''
   shortUrl.value = ''
-  qrCodeBase64.value = '' // Make sure to reset this too
+  qrCodeBase64.value = ''
 
-
-  // 1. Get the token from storage
+  // 2a. Get the token from storage (FIXES THE 401 ERROR)
   const token = localStorage.getItem('authToken')
 
   if (!token) {
-    errorMessage.value = 'You are not logged in. Please log in first.'
+    errorMessage.value = 'You are not logged in. Please go to the Login page.'
     isLoading.value = false
     return
   }
 
-  // 2. Add the token to the 'Authorization' header
+  // 2b. Add the token to the 'Authorization' header
   const headers = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}` // This is the "VIP Pass"
   }
-  // --- END OF FIX ---
+
+  // 2c. Add the new 'customAlias' to the request body
+  const body = JSON.stringify({
+    longUrl: longUrl.value,
+    customAlias: customAlias.value || null // Send the alias or null
+  })
 
   try {
     const response = await fetch(`${API_URL}/api/shorten`, {
       method: 'POST',
       headers: headers, // <-- Use the new headers object
-      body: JSON.stringify({ longUrl: longUrl.value }),
+      body: body,       // <-- Use the new body object
     })
 
+    // 2d. Handle validation and other errors from the API
     if (!response.ok) {
-      throw new Error('Failed to create short URL. Is the URL valid?')
+       if (response.status === 401) {
+        throw new Error('Your session has expired. Please log in again.')
+       }
+       // This will display validation errors (e.g., "Alias already taken")
+       const errorData = await response.json()
+       if (errorData.errors) {
+         // Get the first error message from the validation object
+         const firstErrorKey = Object.keys(errorData.errors)[0];
+         const firstError = errorData.errors[firstErrorKey][0];
+         throw new Error(firstError)
+       }
+       throw new Error(errorData.title || 'An unknown error occurred.')
     }
 
+    // 2e. Set the results on success
     const data = await response.json()
     shortUrl.value = data.shortUrl
-    qrCodeBase64.value = data.qrCodeBase64 // Save the QR code
+    qrCodeBase64.value = data.qrCodeBase64
+
   } catch (error) {
     errorMessage.value = error.message
   } finally {
@@ -66,28 +87,54 @@ async function copyToClipboard() {
 </script>
 
 <template>
+  <!-- 3. THE TEMPLATE (with the new input field) -->
   <v-container>
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
+
+        <!-- The Main Input Card -->
         <v-card class="pa-4 pa-md-6" elevation="2">
           <h1 class="text-h4 text-center mb-6">URL Shortener</h1>
+
           <v-text-field
             v-model="longUrl"
             label="Paste your long URL here"
             variant="outlined"
             placeholder="https://www.a-very-long-url-to-shorten.com/..."
             clearable
-            @keyup.enter="createShortUrl"
           ></v-text-field>
 
-          <v-btn :loading="isLoading" @click="createShortUrl" color="primary" size="large" block>
+          <!-- 3a. THIS IS THE NEW INPUT FIELD FOR THE ALIAS -->
+          <v-text-field
+            v-model="customAlias"
+            label="Custom alias (optional)"
+            variant="outlined"
+            placeholder="my-cool-link"
+            clearable
+            class="mt-4"
+          ></v-text-field>
+
+          <v-btn
+            :loading="isLoading"
+            @click="createShortUrl"
+            color="primary"
+            size="large"
+            block
+            class="mt-4"
+          >
             Shorten!
           </v-btn>
         </v-card>
 
+        <!-- The Result Card (this part is unchanged) -->
         <v-card v-if="shortUrl" class="mt-6 pa-4 pa-md-6" elevation="2">
           <div class="text-h6 mb-4">Your short link is ready!</div>
-          <v-text-field :model-value="shortUrl" label="Short Link" variant="filled" readonly>
+          <v-text-field
+            :model-value="shortUrl"
+            label="Short Link"
+            variant="filled"
+            readonly
+          >
             <template v-slot:append-inner>
               <v-btn
                 icon="mdi-content-copy"
@@ -98,6 +145,7 @@ async function copyToClipboard() {
             </template>
           </v-text-field>
 
+          <!-- QR Code Display -->
           <v-row justify="center" class="mt-4">
             <v-col cols="auto">
               <v-img
@@ -111,6 +159,7 @@ async function copyToClipboard() {
           </v-row>
         </v-card>
 
+        <!-- The Error Alert (this part is unchanged) -->
         <v-alert
           v-if="errorMessage"
           type="error"
@@ -120,6 +169,7 @@ async function copyToClipboard() {
         >
           {{ errorMessage }}
         </v-alert>
+
       </v-col>
     </v-row>
   </v-container>
