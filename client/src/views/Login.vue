@@ -9,7 +9,7 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const router = useRouter()
 
-// This is your live API URL on Render
+//Live API URL on render
 const API_URL = 'https://nginx-latest-1-mem4.onrender.com'
 
 async function handleLogin() {

@@ -13,5 +13,5 @@ import Sidebar from './components/Sidebar.vue'
 </template>
 
 <style>
-/* Global styles if needed */
+
 </style>

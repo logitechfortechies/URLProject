@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 
-// All your logic now lives in this component
 const longUrl = ref('')
 const shortUrl = ref('')
 const qrCodeBase64 = ref('') // This stores the QR code

@@ -2,11 +2,9 @@
 import { ref } from 'vue'
 
 // This will control which item is currently "active"
-// We use an array to fix the Vuetify warning.
-// We use the route path (e.g., '/') as the value.
+
 const selectedItem = ref(['/'])
 
-// This is the list of links for your sidebar.
 // The "to" property tells vue-router where to navigate.
 const items = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', value: '/', to: '/' },
@@ -50,7 +48,7 @@ const items = [
 </template>
 
 <style scoped>
-/* You can add custom styles here if you want */
+
 .v-list-item--active {
   font-weight: bold;
 }
