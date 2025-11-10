@@ -34,6 +34,7 @@ async function handleLogin() {
 
     // On success, store the token and redirect
     localStorage.setItem('authToken', data.accessToken)
+    localStorage.setItem('userEmail', email.value)
     router.push('/') // Redirect to the main dashboard
   } catch (error) {
     errorMessage.value = error.message

@@ -10,7 +10,7 @@ const qrCodeBase64 = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-// Use a relative path, as your Vue app is now hosted by your API
+// Use a relative path, as  Vue app is now hosted by API
 const API_URL = ''
 
 // --- 2. THE createShortUrl FUNCTION (HEAVILY UPDATED) ---

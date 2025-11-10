@@ -12,13 +12,13 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
 // --- 1. DEFINE CUSTOM THEME ---
-const myCustomDarkTheme = {
+const myCustomLightTheme = {
   dark: true,
   colors: {
     background: '#2a0c4e', // A rich dark purple
     surface: '#FFFFFF', // White for surfaces
-    primary: '#6D28D9', // A brighter purple for accents
-    secondary: '#ECECEC', // A light grey for contrast
+    primary: '#EE6123', // A vibrant orange
+    secondary: '#0B234F',// A deep navy blue
     error: '#B00020',
     info: '#2196F3',
     success: '#4CAF50',
@@ -33,9 +33,9 @@ const vuetify = createVuetify({
 
   // --- 3. APPLY THE THEME ---
   theme: {
-    defaultTheme: 'myCustomDarkTheme', 
+    defaultTheme: 'myCustomLightTheme',
     themes: {
-      myCustomDarkTheme,
+      myCustomLightTheme,
     },
   },
 
