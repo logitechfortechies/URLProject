@@ -5,18 +5,18 @@ using UrlShortener.Infrastructure;
 using QRCoder;
 using System.Drawing;
 using System.IO;
-using System.Security.Claims; 
+using System.Security.Claims;
 
 namespace UrlShortener.Application
 {
     public interface IUrlShortenerService
     {
-    
+
         Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, ClaimsPrincipal user);
         Task<string?> GetLongUrlAsync(string shortCode);
     }
 
-    
+
     public class UrlShortenerService : IUrlShortenerService
     {
         private readonly ApplicationDbContext _dbContext;
@@ -83,7 +83,7 @@ namespace UrlShortener.Application
                 longUrl = shortenedUrl.LongUrl;
 
                 var cacheOptions = new DistributedCacheEntryOptions()
-                 
+
                     .SetAbsoluteExpiration(TimeSpan.FromHours(1));
                 await _cache.SetStringAsync(shortCode, longUrl, cacheOptions);
             }
