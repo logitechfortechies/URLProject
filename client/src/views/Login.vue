@@ -10,7 +10,7 @@ const errorMessage = ref('')
 const router = useRouter()
 
 //Live API URL on render
-const API_URL = 'https://nginx-latest-1-mem4.onrender.com'
+const API_URL = ''
 
 async function handleLogin() {
   isLoading.value = true
@@ -35,7 +35,6 @@ async function handleLogin() {
     // On success, store the token and redirect
     localStorage.setItem('authToken', data.accessToken)
     router.push('/') // Redirect to the main dashboard
-
   } catch (error) {
     errorMessage.value = error.message
   } finally {
@@ -69,13 +68,7 @@ async function handleLogin() {
             @keyup.enter="handleLogin"
           ></v-text-field>
 
-          <v-btn
-            :loading="isLoading"
-            @click="handleLogin"
-            color="primary"
-            size="large"
-            block
-          >
+          <v-btn :loading="isLoading" @click="handleLogin" color="primary" size="large" block>
             Login
           </v-btn>
 

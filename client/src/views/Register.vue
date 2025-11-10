@@ -8,8 +8,7 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const router = useRouter()
 
-const API_URL = 'https://nginx-latest-1-mem4.onrender.com'
-
+const API_URL = ''
 async function handleRegister() {
   isLoading.value = true
   errorMessage.value = ''
@@ -33,7 +32,6 @@ async function handleRegister() {
 
     // On success, redirect to login
     router.push('/login')
-
   } catch (error) {
     errorMessage.value = error.message
   } finally {
@@ -67,13 +65,7 @@ async function handleRegister() {
             @keyup.enter="handleRegister"
           ></v-text-field>
 
-          <v-btn
-            :loading="isLoading"
-            @click="handleRegister"
-            color="primary"
-            size="large"
-            block
-          >
+          <v-btn :loading="isLoading" @click="handleRegister" color="primary" size="large" block>
             Create Account
           </v-btn>
 
