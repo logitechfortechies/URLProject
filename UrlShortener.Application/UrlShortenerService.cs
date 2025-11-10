@@ -5,15 +5,18 @@ using UrlShortener.Infrastructure;
 using QRCoder;
 using System.Drawing;
 using System.IO;
+using System.Security.Claims; 
 
 namespace UrlShortener.Application
 {
     public interface IUrlShortenerService
     {
-        Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost);
+    
+        Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, ClaimsPrincipal user);
         Task<string?> GetLongUrlAsync(string shortCode);
     }
 
+    
     public class UrlShortenerService : IUrlShortenerService
     {
         private readonly ApplicationDbContext _dbContext;
@@ -25,7 +28,8 @@ namespace UrlShortener.Application
             _cache = cache;
         }
 
-        public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost)
+        //  Added the 'ClaimsPrincipal user' parameter to match the interface
+        public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, ClaimsPrincipal user)
         {
             string shortCode;
             if (string.IsNullOrEmpty(request.CustomAlias))
@@ -37,11 +41,15 @@ namespace UrlShortener.Application
                 shortCode = request.CustomAlias;
             }
 
+            //  Use 'ClaimTypes.NameIdentifier' to get the User ID
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var shortenedUrl = new ShortenedUrl
             {
                 LongUrl = request.LongUrl,
                 ShortCode = shortCode,
-                CreatedOnUtc = DateTime.UtcNow
+                CreatedOnUtc = DateTime.UtcNow,
+                UserId = userId
             };
 
             await _dbContext.ShortenedUrls.AddAsync(shortenedUrl);
@@ -75,7 +83,8 @@ namespace UrlShortener.Application
                 longUrl = shortenedUrl.LongUrl;
 
                 var cacheOptions = new DistributedCacheEntryOptions()
-                    .SetAbsoluteExpiration(TimeSpan.fromHours(1));
+                 
+                    .SetAbsoluteExpiration(TimeSpan.FromHours(1));
                 await _cache.SetStringAsync(shortCode, longUrl, cacheOptions);
             }
 
@@ -109,6 +118,6 @@ namespace UrlShortener.Application
                     return code;
                 }
             }
-        } // <-- THIS BRACE WAS LIKELY MISSING
+        }
     }
 }

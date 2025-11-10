@@ -29,7 +29,7 @@ namespace UrlShortener.Application.Validators
         }
 
         private bool BeAValidUrl(string longUrl)
-        D;
+        {
             return Uri.IsWellFormedUriString(longUrl, UriKind.Absolute);
         }
 

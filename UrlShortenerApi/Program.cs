@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting; // For Rate Limiting
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
