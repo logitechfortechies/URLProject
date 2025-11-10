@@ -115,8 +115,8 @@ namespace UrlShortener.Application
                 Async(s => s.ShortCode == code))
                 {
                 return code;
+                }
             }
         }
     }
-}
 }
