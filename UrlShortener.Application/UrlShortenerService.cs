@@ -10,8 +10,8 @@ namespace UrlShortener.Application
 {
     public interface IUrlShortenerService
     {
-        Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost);
-        Task<string?> GetLongUrlAsync(string shortCode);
+        public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, System.Security.Claims.ClaimsPrincipal user)
+        Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, System.Security.Claims.ClaimsPrincipal user);
     }
 
     public class UrlShortenerService : IUrlShortenerService
@@ -37,11 +37,14 @@ namespace UrlShortener.Application
                 shortCode = request.CustomAlias;
             }
 
+            var userId = user.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
             var shortenedUrl = new ShortenedUrl
             {
                 LongUrl = request.LongUrl,
                 ShortCode = shortCode,
-                CreatedOnUtc = DateTime.UtcNow
+                CreatedOnUtc = DateTime.UtcNow,
+                UserId = userId 
             };
 
             await _dbContext.ShortenedUrls.AddAsync(shortenedUrl);

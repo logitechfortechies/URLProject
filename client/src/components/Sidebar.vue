@@ -8,10 +8,9 @@ const selectedItem = ref(['/'])
 // The "to" property tells vue-router where to navigate.
 const items = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', value: '/', to: '/' },
+  { title: 'My Links', icon: 'mdi-link', value: '/links', to: '/links' }, 
   { title: 'Login', icon: 'mdi-login', value: '/login', to: '/login' },
   { title: 'Register', icon: 'mdi-account-plus', value: '/register', to: '/register' },
-  // { title: 'Links', icon: 'mdi-link', value: 'Links' },
-  // { title: 'QR Codes', icon: 'mdi-qrcode', value: 'QR Codes' },
 ]
 </script>
 

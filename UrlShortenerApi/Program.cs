@@ -94,7 +94,8 @@ app.MapPost("/api/shorten",
         CreateShortUrlRequest request,
         IUrlShortenerService service,
         IValidator<CreateShortUrlRequest> validator,
-        HttpContext httpContext
+        HttpContext httpContext,
+        System.Security.Claims.ClaimsPrincipal user // <-- 1. GET THE USER
     ) =>
     {
         var validationResult = await validator.ValidateAsync(request);
@@ -103,31 +104,41 @@ app.MapPost("/api/shorten",
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-
+        // 2. PASS THE USER TO THE SERVICE
         var response = await service.CreateShortUrlAsync(
-        request,
-        httpContext.Request.Scheme,
-        httpContext.Request.Host.ToString()
-    );
-
+            request,
+            httpContext.Request.Scheme,
+            httpContext.Request.Host.ToString(),
+            user // <-- 3. PASS THE USER
+        );
 
         return Results.Ok(response);
     })
 .RequireRateLimiting("FixedWindowPolicy")
 .RequireAuthorization();
 
-// "REDIRECT" ENDPOINT (PUBLIC)
-app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
+// --- THIS IS THE NEW "MY LINKS" ENDPOINT ---
+app.MapGet("/api/my-links", async (
+    IUrlShortenerService service,
+    ApplicationDbContext dbContext,
+    System.Security.Claims.ClaimsPrincipal user
+) =>
 {
-    var longUrl = await service.GetLongUrlAsync(shortCode);
+    var userId = user.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
 
-    if (longUrl is null)
+    if (string.IsNullOrEmpty(userId))
     {
-        return Results.NotFound();
+        return Results.Unauthorized();
     }
 
-    return Results.Redirect(longUrl, permanent: true);
-});
+    var links = await dbContext.ShortenedUrls
+        .Where(s => s.UserId == userId)
+        .OrderByDescending(s => s.CreatedOnUtc)
+        .ToListAsync();
+
+    return Results.Ok(links);
+})
+.RequireAuthorization(); 
 
 // "IDENTITY" ENDPOINTS (e.g., /register, /login)
 app.MapIdentityApi<IdentityUser>();
