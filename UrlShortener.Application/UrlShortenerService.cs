@@ -10,8 +10,8 @@ namespace UrlShortener.Application
 {
     public interface IUrlShortenerService
     {
-        public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, System.Security.Claims.ClaimsPrincipal user)
-        Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, System.Security.Claims.ClaimsPrincipal user);
+        Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost);
+        Task<string?> GetLongUrlAsync(string shortCode);
     }
 
     public class UrlShortenerService : IUrlShortenerService
@@ -37,14 +37,11 @@ namespace UrlShortener.Application
                 shortCode = request.CustomAlias;
             }
 
-            var userId = user.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-
             var shortenedUrl = new ShortenedUrl
             {
                 LongUrl = request.LongUrl,
                 ShortCode = shortCode,
-                CreatedOnUtc = DateTime.UtcNow,
-                UserId = userId 
+                CreatedOnUtc = DateTime.UtcNow
             };
 
             await _dbContext.ShortenedUrls.AddAsync(shortenedUrl);
@@ -78,7 +75,7 @@ namespace UrlShortener.Application
                 longUrl = shortenedUrl.LongUrl;
 
                 var cacheOptions = new DistributedCacheEntryOptions()
-                    .SetAbsoluteExpiration(TimeSpan.FromHours(1));
+                    .SetAbsoluteExpiration(TimeSpan.fromHours(1));
                 await _cache.SetStringAsync(shortCode, longUrl, cacheOptions);
             }
 
@@ -112,6 +109,6 @@ namespace UrlShortener.Application
                     return code;
                 }
             }
-        }
+        } // <-- THIS BRACE WAS LIKELY MISSING
     }
 }

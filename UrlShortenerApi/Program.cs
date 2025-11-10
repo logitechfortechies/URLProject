@@ -138,7 +138,7 @@ app.MapGet("/api/my-links", async (
 
     return Results.Ok(links);
 })
-.RequireAuthorization(); 
+.RequireAuthorization();
 
 // "IDENTITY" ENDPOINTS (e.g., /register, /login)
 app.MapIdentityApi<IdentityUser>();
