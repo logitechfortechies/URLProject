@@ -7,7 +7,7 @@ using UrlShortener.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DEFINE YOUR CORS POLICY ---
+// --- 1. DEFINE  CORS POLICY ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -48,7 +48,7 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-// --- 6. REGISTER YOUR APPLICATION SERVICES ---
+// --- 6. REGISTER APPLICATION SERVICES ---
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 builder.Services.AddValidatorsFromAssemblyContaining<IUrlShortenerService>();
 
@@ -75,13 +75,13 @@ app.UseHttpsRedirection();
 
 // --- 9. CONFIGURE MIDDLEWARE ---
 
-// This serves your Vue.js app's static files (e.g., index.html)
+// This is Vue.js app's static files (e.g., index.html)
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseCors();
 
-// These MUST be in the correct order
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -103,19 +103,18 @@ app.MapPost("/api/shorten",
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        // --- THIS IS THE FIX ---
-        // We now pass all 3 arguments to the service
+       
         var response = await service.CreateShortUrlAsync(
         request, 
         httpContext.Request.Scheme,
         httpContext.Request.Host.ToString()
     );
-        // --- END OF FIX ---
+        
 
         return Results.Ok(response);
     })
-.RequireRateLimiting("FixedWindowPolicy") // Applies rate limit
-.RequireAuthorization();                 // Applies Identity security
+.RequireRateLimiting("FixedWindowPolicy") 
+.RequireAuthorization();                 
 
 // "REDIRECT" ENDPOINT (PUBLIC)
 app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
@@ -133,8 +132,7 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
 // "IDENTITY" ENDPOINTS (e.g., /register, /login)
 app.MapIdentityApi<IdentityUser>();
 
-// --- THIS IS THE FIX for serving the VUE APP ---
-// This must be LAST. It sends all other requests to your Vue app.
+
 app.MapFallbackToFile("index.html");
 
 app.Run();

@@ -7,20 +7,20 @@ namespace UrlShortener.Application.Validators
 {
     public class CreateShortUrlRequestValidator : AbstractValidator<CreateShortUrlRequest>
     {
-        // 2. ADD THIS TO HOLD THE DATABASE CONNECTION
+        
         private readonly ApplicationDbContext _dbContext;
 
-        // 3. UPDATE THE CONSTRUCTOR TO RECEIVE THE DATABASE
+        //  UPDATE THE CONSTRUCTOR TO RECEIVE THE DATABASE
         public CreateShortUrlRequestValidator(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext; // 4. ASSIGN THE DATABASE
 
-            // --- This is your existing rule for LongUrl ---
+           
             RuleFor(x => x.LongUrl)
                 .NotEmpty().WithMessage("URL must not be empty.")
                 .Must(BeAValidUrl).WithMessage("A valid URL is required.");
 
-            // --- 5. ADD THESE NEW RULES FOR THE CUSTOM ALIAS ---
+            //  CUSTOM ALIAS ---
             RuleFor(x => x.CustomAlias)
                 .MinimumLength(5).When(x => !string.IsNullOrEmpty(x.CustomAlias))
                     .WithMessage("Custom alias must be at least 5 characters.")
@@ -37,4 +37,4 @@ namespace UrlShortener.Application.Validators
             return Uri.IsWellFormedUriString(longUrl, UriKind.Absolute);
         }
 
-        // --- 6
+        

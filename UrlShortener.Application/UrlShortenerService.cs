@@ -10,8 +10,7 @@ namespace UrlShortener.Application
 {
     public interface IUrlShortenerService
     {
-        // 1. THIS IS THE CORRECT INTERFACE
-        // It now takes the full request object
+       
         Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost);
         Task<string?> GetLongUrlAsync(string shortCode);
     }
@@ -27,26 +26,26 @@ namespace UrlShortener.Application
             _cache = cache;
         }
 
-        // 2. THIS IS THE CORRECT METHOD SIGNATURE
+        
         public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost)
         {
-            // 3. THIS IS THE NEW ALIAS LOGIC
+            
             string shortCode;
             if (string.IsNullOrEmpty(request.CustomAlias))
             {
-                // No custom alias, so generate a random one
+                
                 shortCode = await GenerateUniqueShortCodeAsync();
             }
             else
             {
-                // Use the custom alias (it was already validated by FluentValidation)
+                
                 shortCode = request.CustomAlias;
             }
-            // --- END OF NEW ALIAS LOGIC ---
+            
 
             var shortenedUrl = new ShortenedUrl
             {
-                LongUrl = request.LongUrl, // Use request.LongUrl
+                LongUrl = request.LongUrl, 
                 ShortCode = shortCode,
                 CreatedOnUtc = DateTime.UtcNow
             };
@@ -60,7 +59,7 @@ namespace UrlShortener.Application
             // Cache the correct data
             await _cache.SetStringAsync(shortCode, request.LongUrl, cacheOptions);
 
-            // --- YOUR QR CODE LOGIC (STAYS THE SAME) ---
+            // QR CODE LOGIC 
             var shortUrl = $"{requestScheme}://{requestHost}/{shortCode}";
             var qrCodeBase64 = GenerateQrCode(shortUrl);
 
@@ -70,7 +69,7 @@ namespace UrlShortener.Application
 
         public async Task<string?> GetLongUrlAsync(string shortCode)
         {
-            // Your GetLongUrlAsync logic is correct and stays the same
+            
             string? longUrl = await _cache.GetStringAsync(shortCode);
 
             if (string.IsNullOrEmpty(longUrl))
@@ -93,7 +92,7 @@ namespace UrlShortener.Application
             return longUrl;
         }
 
-        // YOUR QR CODE METHOD (STAYS THE SAME)
+        //  QR CODE METHOD 
         private string GenerateQrCode(string url)
         {
             using (var qrGenerator = new QRCodeGenerator())
@@ -105,7 +104,7 @@ namespace UrlShortener.Application
             }
         }
 
-        // YOUR RANDOM CODE GENERATOR (STAYS THE SAME)
+        //  RANDOM CODE GENERATOR 
         private async Task<string> GenerateUniqueShortCodeAsync()
         {
             const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";

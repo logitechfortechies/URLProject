@@ -14,7 +14,6 @@ namespace UrlShortener.Infrastructure
 
         public DbSet<ShortenedUrl> ShortenedUrls { get; set; }
 
-        // All the user tables (AspNetUsers, etc.)
-        // are now included automatically by IdentityDbContext
+       
     }
 }
