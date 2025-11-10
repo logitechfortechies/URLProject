@@ -10,7 +10,6 @@ namespace UrlShortener.Application
 {
     public interface IUrlShortenerService
     {
-
         Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost);
         Task<string?> GetLongUrlAsync(string shortCode);
     }
@@ -26,22 +25,17 @@ namespace UrlShortener.Application
             _cache = cache;
         }
 
-
         public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost)
         {
-
             string shortCode;
             if (string.IsNullOrEmpty(request.CustomAlias))
             {
-
                 shortCode = await GenerateUniqueShortCodeAsync();
             }
             else
             {
-
                 shortCode = request.CustomAlias;
             }
-
 
             var shortenedUrl = new ShortenedUrl
             {
@@ -56,20 +50,16 @@ namespace UrlShortener.Application
             var cacheOptions = new DistributedCacheEntryOptions()
                 .SetAbsoluteExpiration(TimeSpan.FromHours(1));
 
-            // Cache the correct data
             await _cache.SetStringAsync(shortCode, request.LongUrl, cacheOptions);
 
-            // QR CODE LOGIC 
             var shortUrl = $"{requestScheme}://{requestHost}/{shortCode}";
             var qrCodeBase64 = GenerateQrCode(shortUrl);
 
-            // Return the new object (which is defined in ShortUrlDtos.cs)
             return new CreateShortUrlResponse(shortUrl, qrCodeBase64);
         }
 
         public async Task<string?> GetLongUrlAsync(string shortCode)
         {
-
             string? longUrl = await _cache.GetStringAsync(shortCode);
 
             if (string.IsNullOrEmpty(longUrl))
@@ -92,7 +82,6 @@ namespace UrlShortener.Application
             return longUrl;
         }
 
-        //  QR CODE METHOD 
         private string GenerateQrCode(string url)
         {
             using (var qrGenerator = new QRCodeGenerator())
@@ -104,7 +93,6 @@ namespace UrlShortener.Application
             }
         }
 
-        //  RANDOM CODE GENERATOR 
         private async Task<string> GenerateUniqueShortCodeAsync()
         {
             const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -112,10 +100,15 @@ namespace UrlShortener.Application
             var codeLength = 7;
 
             while (true)
-                Async(s => s.ShortCode == code))
+            {
+                var code = new string(Enumerable.Repeat(chars, codeLength)
+                    .Select(s => s[random.Next(s.Length)]).ToArray());
+
+                if (!await _dbContext.ShortenedUrls.AnyAsync(s => s.ShortCode == code))
                 {
-                return code;
+                    return code;
+                }
             }
-        }
+        } 
     }
 }
