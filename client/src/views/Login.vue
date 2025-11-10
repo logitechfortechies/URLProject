@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-// We will use the router to redirect on success
 import { useRouter } from 'vue-router'
 
 const email = ref('')

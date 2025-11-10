@@ -19,10 +19,8 @@ const items = [
   <v-navigation-drawer permanent app width="250" class="pa-2">
     <v-list-item class="mb-4">
       <template v-slot:prepend>
-        <v-img src="/my-logo.png" width="40" contain class="mr-3"></v-img>
+        <v-img src="/my-logo.png" width="200" contain class="mr-3"></v-img>
       </template>
-      <v-list-item-title class="text-h5 font-weight-bold"> Shortener </v-list-item-title>
-      <v-list-item-subtitle> Your Project </v-list-item-subtitle>
     </v-list-item>
     <v-list v-model:selected="selectedItem" nav density="compact" color="primary">
       <v-list-item

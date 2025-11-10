@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 
 // --- 1. STATE ---
-// We add a new ref for the custom alias
 const longUrl = ref('')
 const customAlias = ref('') // <-- NEW
 const shortUrl = ref('')
@@ -10,17 +9,17 @@ const qrCodeBase64 = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-// Use a relative path, as  Vue app is now hosted by API
+//Vue app is now hosted by API
 const API_URL = ''
 
-// --- 2. THE createShortUrl FUNCTION (HEAVILY UPDATED) ---
+// --- 2. THE createShortUrl FUNCTION
 async function createShortUrl() {
   isLoading.value = true
   errorMessage.value = ''
   shortUrl.value = ''
   qrCodeBase64.value = ''
 
-  // 2a. Get the token from storage (FIXES THE 401 ERROR)
+  // 2a. Get the token from storage
   const token = localStorage.getItem('authToken')
 
   if (!token) {
@@ -44,8 +43,8 @@ async function createShortUrl() {
   try {
     const response = await fetch(`${API_URL}/api/shorten`, {
       method: 'POST',
-      headers: headers, // <-- Use the new headers object
-      body: body,       // <-- Use the new body object
+      headers: headers, 
+      body: body,
     })
 
     // 2d. Handle validation and other errors from the API
@@ -159,7 +158,6 @@ async function copyToClipboard() {
           </v-row>
         </v-card>
 
-        <!-- The Error Alert (this part is unchanged) -->
         <v-alert
           v-if="errorMessage"
           type="error"
