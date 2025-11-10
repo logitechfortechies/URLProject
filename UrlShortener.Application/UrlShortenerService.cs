@@ -10,7 +10,7 @@ namespace UrlShortener.Application
 {
     public interface IUrlShortenerService
     {
-       
+
         Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost);
         Task<string?> GetLongUrlAsync(string shortCode);
     }
@@ -26,26 +26,26 @@ namespace UrlShortener.Application
             _cache = cache;
         }
 
-        
+
         public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost)
         {
-            
+
             string shortCode;
             if (string.IsNullOrEmpty(request.CustomAlias))
             {
-                
+
                 shortCode = await GenerateUniqueShortCodeAsync();
             }
             else
             {
-                
+
                 shortCode = request.CustomAlias;
             }
-            
+
 
             var shortenedUrl = new ShortenedUrl
             {
-                LongUrl = request.LongUrl, 
+                LongUrl = request.LongUrl,
                 ShortCode = shortCode,
                 CreatedOnUtc = DateTime.UtcNow
             };
@@ -69,7 +69,7 @@ namespace UrlShortener.Application
 
         public async Task<string?> GetLongUrlAsync(string shortCode)
         {
-            
+
             string? longUrl = await _cache.GetStringAsync(shortCode);
 
             if (string.IsNullOrEmpty(longUrl))

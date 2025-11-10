@@ -1,13 +1,13 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
-using UrlShortener.Infrastructure; 
+using UrlShortener.Infrastructure;
 
 namespace UrlShortener.Application.Validators
 {
     public class CreateShortUrlRequestValidator : AbstractValidator<CreateShortUrlRequest>
     {
-        
+
         private readonly ApplicationDbContext _dbContext;
 
         //  UPDATE THE CONSTRUCTOR TO RECEIVE THE DATABASE
@@ -15,7 +15,7 @@ namespace UrlShortener.Application.Validators
         {
             _dbContext = dbContext; // 4. ASSIGN THE DATABASE
 
-           
+
             RuleFor(x => x.LongUrl)
                 .NotEmpty().WithMessage("URL must not be empty.")
                 .Must(BeAValidUrl).WithMessage("A valid URL is required.");

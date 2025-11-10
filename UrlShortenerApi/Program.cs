@@ -103,18 +103,18 @@ app.MapPost("/api/shorten",
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-       
+
         var response = await service.CreateShortUrlAsync(
-        request, 
+        request,
         httpContext.Request.Scheme,
         httpContext.Request.Host.ToString()
     );
-        
+
 
         return Results.Ok(response);
     })
-.RequireRateLimiting("FixedWindowPolicy") 
-.RequireAuthorization();                 
+.RequireRateLimiting("FixedWindowPolicy")
+.RequireAuthorization();
 
 // "REDIRECT" ENDPOINT (PUBLIC)
 app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>

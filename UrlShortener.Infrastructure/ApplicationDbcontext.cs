@@ -14,6 +14,6 @@ namespace UrlShortener.Infrastructure
 
         public DbSet<ShortenedUrl> ShortenedUrls { get; set; }
 
-       
+
     }
 }
