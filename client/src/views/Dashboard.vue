@@ -3,13 +3,13 @@ import { ref } from 'vue'
 
 // --- 1. STATE ---
 const longUrl = ref('')
-const customAlias = ref('') // <-- NEW
+const customAlias = ref('')
 const shortUrl = ref('')
 const qrCodeBase64 = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-//Vue app is now hosted by API
+
 const API_URL = ''
 
 // --- 2. THE createShortUrl FUNCTION
@@ -31,7 +31,7 @@ async function createShortUrl() {
   // 2b. Add the token to the 'Authorization' header
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}` // This is the "VIP Pass"
+    'Authorization': `Bearer ${token}` // Bearer token authentication
   }
 
   // 2c. Add the new 'customAlias' to the request body
@@ -43,7 +43,7 @@ async function createShortUrl() {
   try {
     const response = await fetch(`${API_URL}/api/shorten`, {
       method: 'POST',
-      headers: headers, 
+      headers: headers,
       body: body,
     })
 
@@ -86,7 +86,7 @@ async function copyToClipboard() {
 </script>
 
 <template>
-  <!-- 3. THE TEMPLATE (with the new input field) -->
+  <!-- 3. THE TEMPLATE -->
   <v-container>
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
@@ -103,7 +103,7 @@ async function copyToClipboard() {
             clearable
           ></v-text-field>
 
-          <!-- 3a. THIS IS THE NEW INPUT FIELD FOR THE ALIAS -->
+          <!-- 3a. THIS IS THE  INPUT FIELD FOR THE ALIAS -->
           <v-text-field
             v-model="customAlias"
             label="Custom alias (optional)"
@@ -125,7 +125,7 @@ async function copyToClipboard() {
           </v-btn>
         </v-card>
 
-        <!-- The Result Card (this part is unchanged) -->
+        <!-- The Result Card -->
         <v-card v-if="shortUrl" class="mt-6 pa-4 pa-md-6" elevation="2">
           <div class="text-h6 mb-4">Your short link is ready!</div>
           <v-text-field

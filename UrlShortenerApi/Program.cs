@@ -8,12 +8,12 @@ using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DEFINE YOUR CORS POLICY ---
+// --- 1. CORS POLICY ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Allow your local Vue app
+        policy.WithOrigins("http://localhost:5173") 
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -50,7 +50,7 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-// --- 6. REGISTER YOUR APPLICATION SERVICES ---
+// --- 6. REGISTER  APPLICATION SERVICES ---
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 builder.Services.AddValidatorsFromAssemblyContaining<IUrlShortenerService>();
 
@@ -71,7 +71,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); // Corrected typo
+    app.UseSwaggerUI(); 
 }
 
 app.UseHttpsRedirection();
@@ -83,7 +83,7 @@ app.UseStaticFiles();
 
 app.UseCors();
 
-// These MUST be in the correct order
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -97,7 +97,7 @@ app.MapPost("/api/shorten",
         IUrlShortenerService service,
         IValidator<CreateShortUrlRequest> validator,
         HttpContext httpContext,
-        ClaimsPrincipal user // Added user
+        ClaimsPrincipal user 
     ) =>
     {
         var validationResult = await validator.ValidateAsync(request);
@@ -150,7 +150,7 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
 
     if (longUrl is null)
     {
-        // If not found, fall through to the Vue app
+        
         return Results.NotFound();
     }
 

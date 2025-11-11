@@ -1,14 +1,13 @@
 <script setup>
 import { ref } from 'vue'
 
-// This will control which item is currently "active"
 
 const selectedItem = ref(['/'])
 
-// The "to" property tells vue-router where to navigate.
+
 const items = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', value: '/', to: '/' },
-  { title: 'My Links', icon: 'mdi-link', value: '/links', to: '/links' }, 
+  { title: 'My Links', icon: 'mdi-link', value: '/links', to: '/links' },
   { title: 'Login', icon: 'mdi-login', value: '/login', to: '/login' },
   { title: 'Register', icon: 'mdi-account-plus', value: '/register', to: '/register' },
 ]
