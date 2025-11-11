@@ -13,7 +13,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") 
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -71,7 +71,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); 
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -97,7 +97,7 @@ app.MapPost("/api/shorten",
         IUrlShortenerService service,
         IValidator<CreateShortUrlRequest> validator,
         HttpContext httpContext,
-        ClaimsPrincipal user 
+        ClaimsPrincipal user
     ) =>
     {
         var validationResult = await validator.ValidateAsync(request);
@@ -150,7 +150,7 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
 
     if (longUrl is null)
     {
-        
+
         return Results.NotFound();
     }
 
