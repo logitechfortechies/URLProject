@@ -5,7 +5,7 @@ const links = ref([])
 const isLoading = ref(true)
 const errorMessage = ref('')
 
-const API_URL = 'https://shortly-app.onrender.com' // Use your new custom URL
+const API_URL = '' 
 
 async function fetchLinks() {
   const token = localStorage.getItem('authToken')
