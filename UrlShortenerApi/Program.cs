@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
-using System.Security.Claims; 
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -143,8 +143,6 @@ app.MapGet("/api/my-links", async (
 // "IDENTITY" ENDPOINTS (e.g., /register, /login)
 app.MapIdentityApi<IdentityUser>();
 
-// --- 11. THIS IS THE FIX: THE REDIRECT ENDPOINT MUST COME *BEFORE* THE FALLBACK ---
-
 // "REDIRECT" ENDPOINT (PUBLIC)
 app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
 {
@@ -159,8 +157,6 @@ app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service
     return Results.Redirect(longUrl, permanent: true);
 });
 
-// "FALLBACK" FOR VUE.JS (MUST BE LAST)
-// This sends all other requests (like / or /login) to your Vue app.
 app.MapFallbackToFile("index.html");
 
 app.Run();
