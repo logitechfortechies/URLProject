@@ -1,19 +1,19 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Identity; // For Identity
-using Microsoft.AspNetCore.RateLimiting; // For Rate Limiting
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application;
 using UrlShortener.Infrastructure;
-using System.Security.Claims;
+using System.Security.Claims; 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. DEFINE  CORS POLICY ---
+// --- 1. DEFINE YOUR CORS POLICY ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5173") // Allow your local Vue app
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -40,16 +40,17 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
     options.AddFixedWindowLimiter(policyName: "FixedWindowPolicy", opt =>
     {
-        opt.PermitLimit = 5;
-        opt.Window = TimeSpan.FromSeconds(10);
+        opt.PermitLimit = 5;       // Allow 5 requests
+        opt.Window = TimeSpan.FromSeconds(10); // in a 10-second window
         opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 2;
     });
 });
 
-// --- 6. REGISTER APPLICATION SERVICES ---
+// --- 6. REGISTER YOUR APPLICATION SERVICES ---
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 builder.Services.AddValidatorsFromAssemblyContaining<IUrlShortenerService>();
 
@@ -66,23 +67,23 @@ using (var scope = app.Services.CreateScope())
     await dbContext.Database.MigrateAsync();
 }
 
+// --- 9. CONFIGURE MIDDLEWARE ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(); // Corrected typo
 }
 
 app.UseHttpsRedirection();
 
-// --- 9. CONFIGURE MIDDLEWARE ---
-
-// This is Vue.js app's static files (e.g., index.html)
+// Serve default files like index.html
 app.UseDefaultFiles();
+// Serve all static files from the wwwroot folder
 app.UseStaticFiles();
 
 app.UseCors();
 
-
+// These MUST be in the correct order
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -96,7 +97,7 @@ app.MapPost("/api/shorten",
         IUrlShortenerService service,
         IValidator<CreateShortUrlRequest> validator,
         HttpContext httpContext,
-        System.Security.Claims.ClaimsPrincipal user // <-- 1. GET THE USER
+        ClaimsPrincipal user // Added user
     ) =>
     {
         var validationResult = await validator.ValidateAsync(request);
@@ -105,12 +106,11 @@ app.MapPost("/api/shorten",
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        // 2. PASS THE USER TO THE SERVICE
         var response = await service.CreateShortUrlAsync(
-            request,
+            request, // Pass the full request
             httpContext.Request.Scheme,
             httpContext.Request.Host.ToString(),
-            user // <-- 3. PASS THE USER
+            user // Pass the user
         );
 
         return Results.Ok(response);
@@ -118,14 +118,13 @@ app.MapPost("/api/shorten",
 .RequireRateLimiting("FixedWindowPolicy")
 .RequireAuthorization();
 
-// --- THIS IS THE NEW "MY LINKS" ENDPOINT ---
+// "GET MY LINKS" ENDPOINT (SECURED)
 app.MapGet("/api/my-links", async (
-    IUrlShortenerService service,
     ApplicationDbContext dbContext,
-    System.Security.Claims.ClaimsPrincipal user
+    ClaimsPrincipal user
 ) =>
 {
-    var userId = user.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
 
     if (string.IsNullOrEmpty(userId))
     {
@@ -144,7 +143,24 @@ app.MapGet("/api/my-links", async (
 // "IDENTITY" ENDPOINTS (e.g., /register, /login)
 app.MapIdentityApi<IdentityUser>();
 
+// --- 11. THIS IS THE FIX: THE REDIRECT ENDPOINT MUST COME *BEFORE* THE FALLBACK ---
 
+// "REDIRECT" ENDPOINT (PUBLIC)
+app.MapGet("/{shortCode}", async (string shortCode, IUrlShortenerService service) =>
+{
+    var longUrl = await service.GetLongUrlAsync(shortCode);
+
+    if (longUrl is null)
+    {
+        // If not found, fall through to the Vue app
+        return Results.NotFound();
+    }
+
+    return Results.Redirect(longUrl, permanent: true);
+});
+
+// "FALLBACK" FOR VUE.JS (MUST BE LAST)
+// This sends all other requests (like / or /login) to your Vue app.
 app.MapFallbackToFile("index.html");
 
 app.Run();
