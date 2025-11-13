@@ -18,8 +18,10 @@ namespace UrlShortener.Application.Validators
                 .Must(BeAValidUrl).WithMessage("A valid URL is required.");
 
             RuleFor(x => x.CustomAlias)
-                .Must(alias => alias.Length = 5).When(x => !string.IsNullOrEmpty(x.CustomAlias))
-                     .WithMessage("Custom alias must be 5 characters.")
+                .MinimumLength(5).When(x => !string.IsNullOrEmpty(x.CustomAlias))
+                    .WithMessage("Custom alias must be  5 characters.")
+                .MaximumLength(5).When(x => !string.IsNullOrEmpty(x.CustomAlias))
+                    .WithMessage("Custom alias must be 5 characters.")
                  .Matches("^[a-zA-Z0-9_-]*$").When(x => !string.IsNullOrEmpty(x.CustomAlias))
                     .WithMessage("Alias can only contain letters, numbers, dashes, and underscores.")
                 .MustAsync(BeUniqueAlias).When(x => !string.IsNullOrEmpty(x.CustomAlias))
