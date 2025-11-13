@@ -115,7 +115,7 @@ namespace UrlShortener.Application
 
                 if (!await _dbContext.ShortenedUrls.AnyAsync(s => s.ShortCode == code + "amd"))
                 {
-                    return code;
+                    return code + "amd";
                 }
             }
         }
