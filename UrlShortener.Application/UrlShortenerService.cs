@@ -106,14 +106,14 @@ namespace UrlShortener.Application
         {
             const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
-            var codeLength = 7;
+            var codeLength = 5;
 
             while (true)
             {
                 var code = new string(Enumerable.Repeat(chars, codeLength)
                     .Select(s => s[random.Next(s.Length)]).ToArray());
 
-                if (!await _dbContext.ShortenedUrls.AnyAsync(s => s.ShortCode == code))
+                if (!await _dbContext.ShortenedUrls.AnyAsync(s => s.ShortCode == code + "amd"))
                 {
                     return code;
                 }
