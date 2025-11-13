@@ -28,7 +28,7 @@ namespace UrlShortener.Application
             _cache = cache;
         }
 
-        //  Added the 'ClaimsPrincipal user' parameter to match the interface
+        // Create a shortened URL with optional custom alias
         public async Task<CreateShortUrlResponse> CreateShortUrlAsync(CreateShortUrlRequest request, string requestScheme, string requestHost, ClaimsPrincipal user)
         {
             string shortCode;
@@ -38,7 +38,7 @@ namespace UrlShortener.Application
             }
             else
             {
-                shortCode = request.CustomAlias;
+                shortCode = request.CustomAlias + "amd";
             }
 
             //  Use 'ClaimTypes.NameIdentifier' to get the User ID
