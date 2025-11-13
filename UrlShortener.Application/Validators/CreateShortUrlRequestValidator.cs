@@ -24,7 +24,7 @@ namespace UrlShortener.Application.Validators
                     .WithMessage("Custom alias must be 30 characters or less.")
                 .Matches("^[a-zA-Z0-9_-]*$").When(x => !string.IsNullOrEmpty(x.CustomAlias))
                     .WithMessage("Alias can only contain letters, numbers, dashes, and underscores.")
-                .Must(x => x.Contains("amd")). When(x => !string.isNullOrEmpty(x.CustomAlias))
+                .Must(x => x.Contains("amd")).When(x => !string.isNullOrEmpty(x.CustomAlias))
                      .WithMessage("Custom alias must contain the substring 'amd'.")
                 .MustAsync(BeUniqueAlias).When(x => !string.IsNullOrEmpty(x.CustomAlias))
                     .WithMessage("This custom alias is already taken. Please choose another.");
